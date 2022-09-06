@@ -30,14 +30,14 @@
     "require": {
         "php": "^7.2",
         "ext-openssl": "*",
-        "laminas/laminas-mail": "^2.0",
-        "vimeo/psalm": "^4.27"
+        "laminas/laminas-mail": "^2.0"
     },
     "require-dev": {
         "laminas/laminas-coding-standard": "^2.0",
         "laminas/laminas-servicemanager": "^3.4",
         "phpunit/phpunit": "^9.5",
-        "phpmailer/dkimvalidator": "^0.3.0"
+        "phpmailer/dkimvalidator": "^0.3.0",
+        "vimeo/psalm": "^4.27"
     },
     "autoload": {
         "psr-4": {
