@@ -30,7 +30,8 @@
     "require": {
         "php": "^7.2",
         "ext-openssl": "*",
-        "laminas/laminas-mail": "^2.0"
+        "laminas/laminas-mail": "^2.0",
+        "vimeo/psalm": "^4.27"
     },
     "require-dev": {
         "laminas/laminas-coding-standard": "^2.0",
