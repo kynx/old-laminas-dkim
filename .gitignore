@@ -1,8 +1,7 @@
-.idea
-vendor
 composer.lock
-phpcs.xml
 phpunit.xml
 psalm.xml
+vendor
+/.phpcs-cache
 /.phpunit.cache/
 /.phpunit.result.cache
