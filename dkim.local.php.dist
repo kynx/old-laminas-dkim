@@ -1,0 +1,17 @@
+<?php
+
+declare(strict_types=1);
+
+/**
+ * Copy this file to `config/autoload/dkim.local.php`, but DO NOT check into VCS!!
+ */
+return [
+    'dkim' => [
+        'private_key' => '', // replace with your private key
+        'params'      => [
+            'd' => 'example.com', // replace with your domain
+            's' => 'sept2022', // replace with your selector
+            'h' => 'cc:from:date:reply-to:subject:to', // headers to sign
+        ],
+    ],
+];
