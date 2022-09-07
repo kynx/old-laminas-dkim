@@ -3,8 +3,8 @@
 [laminas-mail] DKIM Signer.
 
 This is a drop in replacement for [metalinspired/laminas-dkim], which the code is entirely based on. I've added unit 
-tests and bug fixes to this branch. The original package was forked from [joepsyko/zf-dkim], which in turn was forked
-from [fastnloud/zf-dkim].
+tests and bug fixes to this branch. That package was forked from [joepsyko/zf-dkim], which in turn was forked from 
+[fastnloud/zf-dkim].
 
 If you are looking for PHP8+ support, more improvements, or would like to contribute, please try the 2.x branch.
 
@@ -20,15 +20,17 @@ If you are adding this to an existing Laminas or Mezzio project, you should be p
 Next copy the configuration to your autoload directory:
 
 ```
-cp vendor/kynx/laminas-dkim/dkim.local.php.dist config/autoload/dkim.local.php
+cp vendor/kynx/laminas-dkim/config/dkim.global.php.dist config/autoload/dkim.global.php
+cp vendor/kynx/laminas-dkim/config/dkim.local.php.dist config/autoload/dkim.local.php
 ```
 
-This file will contain the private key used to sign messages: **do not** check it into version control!
+This `dkim.local.php` will contain the private key used to sign messages: **do not** check it into version control!
 
-Now create a private signing key, as described at [dkimcore.org], and add it to the configuration file you copied above, 
+Now create a private signing key, as described at [dkimcore.org], and add it to the `dkim.local.php` file you copied above, 
 _without_ the surrounding `-----BEGIN RSA PRIVATE KEY-----` / `-----END RSA PRIVATE KEY-----`. 
 
-Finish the configuration by setting your domain, selector and the headers you want to sign in the configuration file.
+Finish the configuration by setting your domain, selector and the headers you want to sign in the `dkim.global.php` 
+file.
 
 You should now be able to sign messages. But you still will need to configure your DNS `TXT` record before receiving 
 mail servers will be able to verify it: see [dkimcore.org] for more instructions.

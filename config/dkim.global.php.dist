@@ -1,11 +1,16 @@
 <?php
 
+declare(strict_types=1);
+
+/**
+ * Copy this file to `config/autoload/dkim.global.php` in your project root
+ */
 return [
     'dkim' => [
         'params' => [
             'd' => 'example.com', // domain
             'h' => 'from:to:subject', // headers to sign
             's' => 'k1', // domain key selector
-        ]
-    ]
+        ],
+    ],
 ];

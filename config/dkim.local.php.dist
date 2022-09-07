@@ -1,7 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
+/**
+ * Copy this file to `config/autoload/dkim.local.php` in your project root, but DO NOT check into VCS!!
+ */
 return [
     'dkim' => [
-        'private_key' => 'your private key'
-    ]
+        'private_key' => 'your private key',
+    ],
 ];
