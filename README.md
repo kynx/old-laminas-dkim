@@ -1,9 +1,8 @@
 # kynx/laminas-dkim
 
-Add DKIM signatures to [laminas-mail] messages.
+[![Build Status](https://github.com/kynx/laminas-dkim/workflows/Continuous%20Integration/badge.svg)](https://github.com/kynx/laminas-dkim/actions?query=workflow%3A"Continuous+Integration")
 
-This is an evolution of [metalinspired/laminas-dkim], with improvements, bug fixes, tests and modernised code. That 
-package was forked from [joepsyko/zf-dkim], which in turn was forked from [fastnloud/zf-dkim].
+Add DKIM signatures to [laminas-mail] messages.
 
 
 ## Installation
@@ -133,6 +132,13 @@ $message = $signer->signMessage($message);
 
 If you are manually constructing the `Signer` instance, see the Manual Instatiation section above for and example of 
 passing the new `Params` and `PrivateKeyInterface` to the constructor.
+
+
+# History
+
+This is an evolution of [metalinspired/laminas-dkim], with improvements, bug fixes, tests and modernised code. That
+package was forked from [joepsyko/zf-dkim], which in turn was forked from [fastnloud/zf-dkim].
+
 
 [laminas-mail]: https://docs.laminas.dev/laminas-mail/
 [metalinspired/laminas-dkim]: https://github.com/metalinspired/laminas-dkim
