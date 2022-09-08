@@ -9,10 +9,13 @@ use Laminas\Mail\Header;
 use Laminas\Mail\Message;
 use Laminas\Mime\Message as MimeMessage;
 
+use function assert;
 use function base64_encode;
 use function hash;
 use function implode;
 use function in_array;
+use function is_object;
+use function is_string;
 use function method_exists;
 use function pack;
 use function preg_replace;

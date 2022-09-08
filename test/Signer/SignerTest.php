@@ -14,6 +14,7 @@ use Laminas\Mime\Message as MimeMessage;
 use Laminas\Mime\Part;
 use PHPUnit\Framework\TestCase;
 
+use function array_values;
 use function str_repeat;
 
 /**
@@ -110,7 +111,7 @@ final class SignerTest extends TestCase
 
     public function testSignMessageHandlesStringableObjectBody(): void
     {
-        $stringable = new class() {
+        $stringable = new class () {
             public function __toString(): string
             {
                 return "Hello world!\r\nHello Again!\r\n";

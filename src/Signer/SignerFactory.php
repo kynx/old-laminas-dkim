@@ -6,7 +6,9 @@ use Exception;
 use Kynx\Laminas\Dkim\PrivateKey\RsaSha256;
 use Psr\Container\ContainerInterface;
 
-use function array_merge;
+use function assert;
+use function is_array;
+use function is_string;
 
 /**
  * @see \KynxTest\Laminas\Dkim\Signer\SignerFactoryTest

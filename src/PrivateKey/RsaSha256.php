@@ -21,7 +21,10 @@ use const OPENSSL_ALGO_SHA256;
  */
 final class RsaSha256 implements PrivateKeyInterface
 {
-    /** @var resource|OpenSSLAsymmetricKey */
+    /**
+     * @psalm-suppress UndefinedDocblockClass
+     * @var resource|OpenSSLAsymmetricKey
+     */
     private $key;
 
     public function __construct(string $privateKey)
@@ -36,7 +39,9 @@ PKEY;
 
         /**
          * Remove `is_resource()` check once php7.4 dropped
+         *
          * @psalm-suppress TypeDoesNotContainType
+         * @psalm-suppress UndefinedClass
          */
         if (! (is_resource($key) || $key instanceof OpenSSLAsymmetricKey)) {
             throw new InvalidPrivateKeyException('Invalid private key');
