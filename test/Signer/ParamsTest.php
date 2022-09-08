@@ -32,7 +32,6 @@ final class ParamsTest extends TestCase
         $params = new Params('example.com', 'sel1');
         self::assertSame($expectedHeaders, $params->getHeaders());
         self::assertSame(1, $params->getVersion());
-        self::assertSame('rsa-sha256', $params->getAlgorithm());
         self::assertSame('relaxed/simple', $params->getCanonicalization());
         self::assertNull($params->getIdentifier());
     }

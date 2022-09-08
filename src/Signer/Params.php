@@ -18,7 +18,6 @@ final class Params
     private const DEFAULT_HEADERS = ['Date', 'From', 'Reply-To', 'Sender', 'Subject'];
 
     private int $version;
-    private string $algorithm;
     private string $domain;
     private string $selector;
     /** @var list<string> */
@@ -48,7 +47,6 @@ final class Params
         $this->headers  = $headers;
 
         $this->version          = 1;
-        $this->algorithm        = 'rsa-sha256';
         $this->identifier       = null;
         $this->canonicalization = 'relaxed/simple';
     }
@@ -56,11 +54,6 @@ final class Params
     public function getVersion(): int
     {
         return $this->version;
-    }
-
-    public function getAlgorithm(): string
-    {
-        return $this->algorithm;
     }
 
     public function getDomain(): string
