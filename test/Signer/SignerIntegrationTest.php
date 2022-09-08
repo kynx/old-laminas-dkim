@@ -4,23 +4,24 @@ declare(strict_types=1);
 
 namespace KynxTest\Laminas\Dkim\Signer;
 
+use Kynx\Laminas\Dkim\Signer\Params;
 use Kynx\Laminas\Dkim\Signer\Signer;
+use KynxTest\Laminas\Dkim\PrivateKeyTrait;
 use Laminas\Mail\Message;
 use Laminas\Mime\Message as MimeMessage;
 use Laminas\Mime\Part;
 use PHPMailer\DKIMValidator\Validator;
 use PHPUnit\Framework\TestCase;
 
-use function file_get_contents;
 use function str_repeat;
-use function str_replace;
-use function trim;
 
 /**
  * @coversNothing
  */
 final class SignerIntegrationTest extends TestCase
 {
+    use PrivateKeyTrait;
+
     private Message $message;
     private Signer $signer;
 
@@ -36,17 +37,8 @@ final class SignerIntegrationTest extends TestCase
             ->setSubject('Subject Subject')
             ->setBody("Hello world!\r\nHello Again!\r\n");
 
-        $privateKey   = trim(str_replace(
-            ['-----BEGIN RSA PRIVATE KEY-----', '-----END RSA PRIVATE KEY-----'],
-            '',
-            file_get_contents(__DIR__ . '/../assets/private_key.pem')
-        ));
-        $params       = [
-            'd' => 'example.com',
-            'h' => 'from:to:subject',
-            's' => '202209',
-        ];
-        $this->signer = new Signer(['private_key' => $privateKey, 'params' => $params]);
+        $params       = new Params('example.com', '202209', ['From', 'To', 'Subject']);
+        $this->signer = new Signer($params, $this->getPrivateKey());
     }
 
     public function testSignMessageIsValid(): void
@@ -70,9 +62,10 @@ final class SignerIntegrationTest extends TestCase
      */
     public function testSignMissingHeaderIsValid(): void
     {
-        $this->signer->setParam('h', 'from:to:subject:reply-to');
+        $params = new Params('example.com', '202209', ['From', 'To', 'Subject', 'Reply-To']);
+        $signer = new Signer($params, $this->getPrivateKey());
 
-        $signed = $this->signer->signMessage($this->message);
+        $signed = $signer->signMessage($this->message);
         self::assertSignedMessageIsValid($signed);
     }
 
