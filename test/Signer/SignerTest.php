@@ -72,7 +72,7 @@ final class SignerTest extends TestCase
         ];
         $arguments[$param] = $value;
 
-        $params = new Params(...$arguments);
+        $params = new Params(...array_values($arguments));
         $signer = new Signer($params, $this->privateKey);
 
         $signed = $signer->signMessage($this->message);
