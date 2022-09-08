@@ -1,6 +1,6 @@
 # kynx/laminas-dkim
 
-Add DKIM signatures [laminas-mail] messages.
+Add DKIM signatures to [laminas-mail] messages.
 
 This is an evolution of [metalinspired/laminas-dkim], with improvements, bug fixes, tests and modernised code. That 
 package was forked from [joepsyko/zf-dkim], which in turn was forked from [fastnloud/zf-dkim].
@@ -13,7 +13,7 @@ composer require kynx/laminas-dkim
 ```
 
 If you are adding this to an existing Laminas or Mezzio project, you should be prompted to add the package as a module 
-/ to your `config/config.php`. 
+or to your `config/config.php`. 
 
 Next copy the configuration to your autoload directory:
 
@@ -22,9 +22,9 @@ cp vendor/kynx/laminas-dkim/config/dkim.global.php.dist config/autoload/dkim.glo
 cp vendor/kynx/laminas-dkim/config/dkim.local.php.dist config/autoload/dkim.local.php
 ```
 
-The `dkim.local.php` file will contain the private key used to sign messages: **do not** check it into version control!
+The `dkim.local.php` file will contain the private key used to sign messages: **DO NOT** check it into version control!
 
-Create a private signing key, as described at [dkimcore.org], and add it to the `dkim.local.php` file you copied 
+Create a private signing key - as described at [dkimcore.org] - and add it to the `dkim.local.php` file you copied 
 above, _without_ the surrounding `-----BEGIN RSA PRIVATE KEY-----` / `-----END RSA PRIVATE KEY-----`. 
 
 Finish the configuration by setting your `domain`, `selector` and the `headers` you want to sign in `dkim.global.php`.
@@ -106,13 +106,13 @@ The API has undergone a number of changes since version 1.x:
 * `Signer` is now stateless. This fixes problems with signing multiple messages and permits usage in long-running
   processes such as mezzio-swoole.
 * `Signer` now consumes a `Params` instance and a `PrivateKeyInterface`. This provides a more friendly interface to 
-  DKIM's options, and will permit other signing algorithms in future.
+  DKIM's options, and will permit other signing algorithms in future (see [RFC8463]).
 * `Signer::signMessage()` now _returns_ the signed message, leaving the original unaltered.
 * The configuration files now use human-readable keys for parameters, instead of `d`, `s` and `h`.
 
 ### To upgrade:
 
-* Search-and-replace `use Dkim\` with `use Kynx\Laminas\Dkim\`
+* Search for `use Dkim\` and replace with `use Kynx\Laminas\Dkim\`
 * Update the parameters in your configuration files to use `domain`, `selector` and `headers` instead of `d`, `s` and 
   `h`. See [dkim.global.php.dist] for an example.
 * Change your code to use the signed message returned from `Signer::signMessage()`:
@@ -131,11 +131,13 @@ After (2.x):
 $message = $signer->signMessage($message);
 ```
 
-If you are manually constructing the `Signer` instance, see the Manual Instatiation section above for the new structure.
+If you are manually constructing the `Signer` instance, see the Manual Instatiation section above for and example of 
+passing the new `Params` and `PrivateKeyInterface` to the constructor.
 
 [laminas-mail]: https://docs.laminas.dev/laminas-mail/
 [metalinspired/laminas-dkim]: https://github.com/metalinspired/laminas-dkim
 [joepsyko/zf-dkim]: https://github.com/joepsyko/zf-dkim
 [fastnloud/zf-dkim]: https://github.com/fastnloud/zf-dkim
 [dkimcore.org]: http://dkimcore.org/specification.html
+[RFC8463]: https://www.rfc-editor.org/rfc/rfc8463.html
 [dkim.global.php.dist]: ./config/dkim.global.php.dist
