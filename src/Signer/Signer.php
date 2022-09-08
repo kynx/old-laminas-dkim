@@ -50,16 +50,6 @@ final class Signer
     ];
 
     /**
-     * Empty DKIM header.
-     */
-    private Dkim $emptyDkimHeader;
-
-    /**
-     * Canonized headers.
-     */
-    private string $canonizedHeaders = '';
-
-    /**
      * The private key being used.
      *
      * @var bool|resource|OpenSSLAsymmetricKey key
@@ -85,24 +75,19 @@ final class Signer
     }
 
     /**
-     * Sign message with a DKIM signature.
+     * Returns signed message with a DKIM signature.
      */
-    public function signMessage(Message $message): void
+    public function signMessage(Message $message): Message
     {
-        $this
-            // format message
-            ->formatMessage($message)
-            // generate empty dkim header including the body hash
-            ->generateEmptyDkimHeader($message);
+        $clone     = $this->cloneMessage($message);
+        $formatted = $this->formatMessage($clone);
+        $dkim      = $this->getEmptyDkimHeader($formatted);
 
         // add empty (unsigned) dkim header
-        $message->getHeaders()->addHeader($this->getEmptyDkimHeader());
+        $formatted->getHeaders()->addHeader($dkim);
 
-        $this
-            // canonize headers for signing
-            ->canonizeHeaders($message)
-            // sign message
-            ->sign($message);
+        $canonical = $this->getCanonicalHeaders($formatted);
+        return $this->sign($formatted, $dkim, $canonical);
     }
 
     /**
@@ -160,9 +145,24 @@ PKEY;
     }
 
     /**
+     * Returns deap clone of message
+     */
+    private function cloneMessage(Message $message): Message
+    {
+        $clone = clone $message;
+        $clone->setHeaders(clone $message->getHeaders());
+        $body = $message->getBody();
+        if ($body instanceof MimeMessage) {
+            $clone->setBody(clone $body);
+        }
+
+        return $clone;
+    }
+
+    /**
      * Format message for singing.
      */
-    private function formatMessage(Message $message): self
+    private function formatMessage(Message $message): Message
     {
         $body = $message->getBody();
 
@@ -174,7 +174,7 @@ PKEY;
 
         $message->setBody($body);
 
-        return $this;
+        return $message;
     }
 
     /**
@@ -186,10 +186,11 @@ PKEY;
     }
 
     /**
-     * Canonize headers for signing.
+     * Returns canonical headers for signing.
      */
-    private function canonizeHeaders(Message $message): self
+    private function getCanonicalHeaders(Message $message): string
     {
+        $canonical     = '';
         $params        = $this->getParams();
         $headersToSign = explode(':', $params['h']);
 
@@ -202,25 +203,23 @@ PKEY;
             $header    = $message->getHeaders()->get($fieldName);
 
             if ($header instanceof Header\HeaderInterface) {
-                $this->appendCanonizedHeader(
-                    $fieldName . ':' . trim(preg_replace(
-                        '/\s+/',
-                        ' ',
-                        $header->getFieldValue(Header\HeaderInterface::FORMAT_ENCODED)
-                    )) . "\r\n"
-                );
+                $canonical .= $fieldName . ':' . trim(preg_replace(
+                    '/\s+/',
+                    ' ',
+                    $header->getFieldValue(Header\HeaderInterface::FORMAT_ENCODED)
+                )) . "\r\n";
             }
         }
 
-        return $this;
+        return trim($canonical);
     }
 
     /**
-     * Generate empty DKIM header.
+     * Returns empty DKIM header.
      *
      * @throws MissingParamException
      */
-    private function generateEmptyDkimHeader(Message $message): self
+    private function getEmptyDkimHeader(Message $message): Dkim
     {
         // fetch configurable params
         $configurableParams = $this->getParams();
@@ -247,10 +246,7 @@ PKEY;
             $string .= $key . '=' . $value . '; ';
         }
 
-        // set empty dkim header
-        $this->setEmptyDkimHeader(new Dkim(substr(trim($string), 0, -1)));
-
-        return $this;
+        return new Dkim(substr(trim($string), 0, -1));
     }
 
     /**
@@ -258,7 +254,7 @@ PKEY;
      *
      * @throws InvalidPrivateKeyException
      */
-    private function generateSignature(): string
+    private function generateSignature(string $canonicalHeaders): string
     {
         $privateKey = $this->getPrivateKey();
         if (! (is_resource($privateKey) || $privateKey instanceof OpenSSLAsymmetricKey)) {
@@ -266,7 +262,8 @@ PKEY;
         }
 
         $signature = '';
-        openssl_sign($this->getCanonizedHeaders(), $signature, $privateKey, OPENSSL_ALGO_SHA256);
+        /** @psalm-suppress PossiblyInvalidArgument This can be removed once php7.4 support is dropped */
+        openssl_sign($canonicalHeaders, $signature, $privateKey, OPENSSL_ALGO_SHA256);
 
         return trim(chunk_split(base64_encode($signature), 73, ' '));
     }
@@ -274,10 +271,10 @@ PKEY;
     /**
      * Sign message.
      */
-    private function sign(Message $message): self
+    private function sign(Message $message, Dkim $emptyDkimHeader, string $canonicalHeaders): Message
     {
         // generate signature
-        $signature = $this->generateSignature();
+        $signature = $this->generateSignature($canonicalHeaders);
 
         $headers = $message->getHeaders();
 
@@ -285,7 +282,7 @@ PKEY;
         $headers->removeHeader('DKIM-Signature');
 
         // generate new header set starting with the dkim header
-        $headerSet[] = new Dkim($this->getEmptyDkimHeader()->getFieldValue() . $signature);
+        $headerSet[] = new Dkim($emptyDkimHeader->getFieldValue() . $signature);
 
         // then append existing headers
         foreach ($headers as $header) {
@@ -298,7 +295,7 @@ PKEY;
             // add the newly created header set with the dkim signature
             ->addHeaders($headerSet);
 
-        return $this;
+        return $message;
     }
 
     /**
@@ -307,52 +304,6 @@ PKEY;
     private function getParams(): array
     {
         return $this->params;
-    }
-
-    /**
-     * Set empty DKIM header.
-     */
-    private function setEmptyDkimHeader(Dkim $emptyDkimHeader): self
-    {
-        $this->emptyDkimHeader = $emptyDkimHeader;
-
-        return $this;
-    }
-
-    /**
-     * Get empty DKIM header.
-     */
-    private function getEmptyDkimHeader(): Dkim
-    {
-        return $this->emptyDkimHeader;
-    }
-
-    /**
-     * Append canonized header to raw canonized header set.
-     */
-    private function appendCanonizedHeader(string $canonizedHeader): self
-    {
-        $this->setCanonizedHeaders($this->canonizedHeaders . $canonizedHeader);
-
-        return $this;
-    }
-
-    /**
-     * Set canonized headers.
-     */
-    private function setCanonizedHeaders(string $canonizedHeaders): self
-    {
-        $this->canonizedHeaders = $canonizedHeaders;
-
-        return $this;
-    }
-
-    /**
-     * Get canonized headers.
-     */
-    private function getCanonizedHeaders(): string
-    {
-        return trim($this->canonizedHeaders);
     }
 
     /**

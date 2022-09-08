@@ -28,12 +28,9 @@ final class SignerTest extends TestCase
     private const DEFALT_DKIM = 'v=1; a=rsa-sha256; bh=36+kqoyJsuwP2NJR3Fl95HuripBg2zfO++jH/8Df2LM=; c=relaxed/simple; d=example.com; h=from:to:subject; s=202209; b=TpDEopkzCtJzchi1ZoXG1jg3aPNFEA0/WSfW6ysfJtBbjge1YuKacxRe/873WCN/3VdhU8hBZ 1+ZnoYWzJIAO3LHNooA66AU/Jq0ghiJcHONBU50IZdccvPoy8e0180pMLwJtYDF7KQUo65vkk PHIYClotwT29OjxFUdMl1mTEY=';
     // phpcs:enable
 
-    /** @var Message */
-    private $message;
-    /** @var string */
-    private $privateKey;
-    /** @var array */
-    private $params;
+    private Message $message;
+    private string $privateKey;
+    private array $params;
 
     protected function setUp(): void
     {
@@ -61,8 +58,8 @@ final class SignerTest extends TestCase
     {
         $signer = new Signer(['private_key' => $this->privateKey, 'params' => $this->params]);
 
-        $signer->signMessage($this->message);
-        $header = $this->message->getHeaders()->get('dkim-signature');
+        $signed = $signer->signMessage($this->message);
+        $header = $signed->getHeaders()->get('dkim-signature');
         self::assertInstanceOf(Dkim::class, $header);
         self::assertSame(self::DEFALT_DKIM, $header->getFieldValue());
     }
@@ -75,8 +72,8 @@ final class SignerTest extends TestCase
         $signer = new Signer(['private_key' => $this->privateKey, 'params' => $this->params]);
         $signer->setParam($param, $value);
 
-        $signer->signMessage($this->message);
-        $header = $this->message->getHeaders()->get('dkim-signature');
+        $signed = $signer->signMessage($this->message);
+        $header = $signed->getHeaders()->get('dkim-signature');
         self::assertInstanceOf(Dkim::class, $header);
         self::assertSame($expected, $header->getFieldValue());
     }
@@ -127,8 +124,8 @@ final class SignerTest extends TestCase
         $signer = new Signer(['private_key' => $this->privateKey]);
         $signer->setParams($this->params);
 
-        $signer->signMessage($this->message);
-        $header = $this->message->getHeaders()->get('dkim-signature');
+        $signed = $signer->signMessage($this->message);
+        $header = $signed->getHeaders()->get('dkim-signature');
         self::assertInstanceOf(Dkim::class, $header);
         self::assertSame(self::DEFALT_DKIM, $header->getFieldValue());
     }
@@ -151,8 +148,8 @@ final class SignerTest extends TestCase
         $this->message->setBody($mime);
 
         $signer = new Signer(['private_key' => $this->privateKey, 'params' => $this->params]);
-        $signer->signMessage($this->message);
-        $header = $this->message->getHeaders()->get('dkim-signature');
+        $signed = $signer->signMessage($this->message);
+        $header = $signed->getHeaders()->get('dkim-signature');
         self::assertInstanceOf(Dkim::class, $header);
         self::assertSame($expected, $header->getFieldValue());
     }
@@ -162,8 +159,8 @@ final class SignerTest extends TestCase
         $this->message->setBody("Hello world!\nHello Again!\n");
 
         $signer = new Signer(['private_key' => $this->privateKey, 'params' => $this->params]);
-        $signer->signMessage($this->message);
-        $header = $this->message->getHeaders()->get('dkim-signature');
+        $signed = $signer->signMessage($this->message);
+        $header = $signed->getHeaders()->get('dkim-signature');
         self::assertInstanceOf(Dkim::class, $header);
         self::assertSame(self::DEFALT_DKIM, $header->getFieldValue());
     }
@@ -173,8 +170,8 @@ final class SignerTest extends TestCase
         $this->message->setBody("Hello world!\r\nHello Again!\r\n\r\n");
 
         $signer = new Signer(['private_key' => $this->privateKey, 'params' => $this->params]);
-        $signer->signMessage($this->message);
-        $header = $this->message->getHeaders()->get('dkim-signature');
+        $signed = $signer->signMessage($this->message);
+        $header = $signed->getHeaders()->get('dkim-signature');
         self::assertInstanceOf(Dkim::class, $header);
         self::assertSame(self::DEFALT_DKIM, $header->getFieldValue());
     }
@@ -187,8 +184,8 @@ final class SignerTest extends TestCase
         $this->message->setBody("");
 
         $signer = new Signer(['private_key' => $this->privateKey, 'params' => $this->params]);
-        $signer->signMessage($this->message);
-        $header = $this->message->getHeaders()->get('dkim-signature');
+        $signed = $signer->signMessage($this->message);
+        $header = $signed->getHeaders()->get('dkim-signature');
         self::assertInstanceOf(Dkim::class, $header);
         self::assertSame($expected, $header->getFieldValue());
     }
@@ -201,8 +198,8 @@ final class SignerTest extends TestCase
         $this->message->setSubject($subject);
 
         $signer = new Signer(['private_key' => $this->privateKey, 'params' => $this->params]);
-        $signer->signMessage($this->message);
-        $header = $this->message->getHeaders()->get('dkim-signature');
+        $signed = $signer->signMessage($this->message);
+        $header = $signed->getHeaders()->get('dkim-signature');
         self::assertInstanceOf(Dkim::class, $header);
         self::assertSame(self::DEFALT_DKIM, $header->getFieldValue());
     }
@@ -226,8 +223,8 @@ final class SignerTest extends TestCase
         $this->message->setSubject(str_repeat("Subject ", 10));
 
         $signer = new Signer(['private_key' => $this->privateKey, 'params' => $this->params]);
-        $signer->signMessage($this->message);
-        $header = $this->message->getHeaders()->get('dkim-signature');
+        $signed = $signer->signMessage($this->message);
+        $header = $signed->getHeaders()->get('dkim-signature');
         self::assertInstanceOf(Dkim::class, $header);
         self::assertSame($expected, $header->getFieldValue());
     }
@@ -244,18 +241,32 @@ final class SignerTest extends TestCase
     public function testSignMultipleMessages(): void
     {
         $signer = new Signer(['private_key' => $this->privateKey, 'params' => $this->params]);
-        $first = clone $this->message;
+        $first  = clone $this->message;
         $second = clone $this->message;
 
-        $signer->signMessage($first);
+        $first  = $signer->signMessage($first);
         $header = $first->getHeaders()->get('dkim-signature');
         self::assertInstanceOf(Dkim::class, $header);
         self::assertSame(self::DEFALT_DKIM, $header->getFieldValue());
 
-
-        $signer->signMessage($second);
+        $second = $signer->signMessage($second);
         $header = $second->getHeaders()->get('dkim-signature');
         self::assertInstanceOf(Dkim::class, $header);
         self::assertSame(self::DEFALT_DKIM, $header->getFieldValue());
+    }
+
+    public function testSignMessageReturnsClone(): void
+    {
+        $expectedBody = new MimeMessage();
+        $expectedBody->addPart(new Part("Hello world"));
+        $this->message->setBody($expectedBody);
+        $expectedHeaders = $this->message->getHeaders();
+
+        $signer = new Signer(['private_key' => $this->privateKey, 'params' => $this->params]);
+        $signed = $signer->signMessage($this->message);
+        self::assertNotSame($this->message, $signed);
+        self::assertNotSame($expectedBody, $signed->getBody());
+        self::assertSame($expectedBody, $this->message->getBody());
+        self::assertSame($expectedHeaders, $this->message->getHeaders());
     }
 }

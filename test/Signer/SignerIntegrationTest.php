@@ -21,14 +21,8 @@ use function trim;
  */
 final class SignerIntegrationTest extends TestCase
 {
-    /** @var Message */
-    private $message;
-    /** @var string */
-    private $privateKey;
-    /** @var array */
-    private $params;
-    /** @var Signer */
-    private $signer;
+    private Message $message;
+    private Signer $signer;
 
     protected function setUp(): void
     {
@@ -42,23 +36,23 @@ final class SignerIntegrationTest extends TestCase
             ->setSubject('Subject Subject')
             ->setBody("Hello world!\r\nHello Again!\r\n");
 
-        $this->privateKey = trim(str_replace(
+        $privateKey   = trim(str_replace(
             ['-----BEGIN RSA PRIVATE KEY-----', '-----END RSA PRIVATE KEY-----'],
             '',
             file_get_contents(__DIR__ . '/../assets/private_key.pem')
         ));
-        $this->params     = [
+        $params       = [
             'd' => 'example.com',
             'h' => 'from:to:subject',
             's' => '202209',
         ];
-        $this->signer     = new Signer(['private_key' => $this->privateKey, 'params' => $this->params]);
+        $this->signer = new Signer(['private_key' => $privateKey, 'params' => $params]);
     }
 
     public function testSignMessageIsValid(): void
     {
-        $this->signer->signMessage($this->message);
-        self::assertSignedMessageIsValid($this->message);
+        $signed = $this->signer->signMessage($this->message);
+        self::assertSignedMessageIsValid($signed);
     }
 
     public function testSignMimeMessageIsValid(): void
@@ -67,8 +61,8 @@ final class SignerIntegrationTest extends TestCase
         $mime->addPart(new Part("Hello world"));
         $this->message->setBody($mime);
 
-        $this->signer->signMessage($this->message);
-        self::assertSignedMessageIsValid($this->message);
+        $signed = $this->signer->signMessage($this->message);
+        self::assertSignedMessageIsValid($signed);
     }
 
     /**
@@ -78,32 +72,32 @@ final class SignerIntegrationTest extends TestCase
     {
         $this->signer->setParam('h', 'from:to:subject:reply-to');
 
-        $this->signer->signMessage($this->message);
-        self::assertSignedMessageIsValid($this->message);
+        $signed = $this->signer->signMessage($this->message);
+        self::assertSignedMessageIsValid($signed);
     }
 
     public function testSignMessageNormalisedNewLinesIsValid(): void
     {
         $this->message->setBody("Hello world!\nHello Again!\n");
 
-        $this->signer->signMessage($this->message);
-        self::assertSignedMessageIsValid($this->message);
+        $signed = $this->signer->signMessage($this->message);
+        self::assertSignedMessageIsValid($signed);
     }
 
     public function testSignMessageTrailingNewLinesIsValid(): void
     {
         $this->message->setBody("Hello world!\r\nHello Again!\r\n\r\n");
 
-        $this->signer->signMessage($this->message);
-        self::assertSignedMessageIsValid($this->message);
+        $signed = $this->signer->signMessage($this->message);
+        self::assertSignedMessageIsValid($signed);
     }
 
     public function testSignMessageEmptyBodyIsValid(): void
     {
         $this->message->setBody('');
 
-        $this->signer->signMessage($this->message);
-        self::assertSignedMessageIsValid($this->message);
+        $signed = $this->signer->signMessage($this->message);
+        self::assertSignedMessageIsValid($signed);
     }
 
     /**
@@ -113,8 +107,8 @@ final class SignerIntegrationTest extends TestCase
     {
         $this->message->setSubject($subject);
 
-        $this->signer->signMessage($this->message);
-        self::assertSignedMessageIsValid($this->message);
+        $signed = $this->signer->signMessage($this->message);
+        self::assertSignedMessageIsValid($signed);
     }
 
     public function headerProvider(): array
@@ -131,8 +125,8 @@ final class SignerIntegrationTest extends TestCase
         // 80-char subject will be wrapped at 70 chars
         $this->message->setSubject(str_repeat("Subject ", 10));
 
-        $this->signer->signMessage($this->message);
-        self::assertSignedMessageIsValid($this->message);
+        $signed = $this->signer->signMessage($this->message);
+        self::assertSignedMessageIsValid($signed);
     }
 
     public static function assertSignedMessageIsValid(Message $message): void
