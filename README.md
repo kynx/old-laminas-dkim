@@ -106,7 +106,7 @@ The API has undergone a number of changes since version 1.x:
 * `Signer` is now stateless. This fixes problems with signing multiple messages and permits usage in long-running
   processes such as mezzio-swoole.
 * `Signer` now consumes a `Params` instance and a `PrivateKeyInterface`. This provides a more friendly interface to 
-* DKIM's options, and will permit other signing algorithms in future.
+  DKIM's options, and will permit other signing algorithms in future.
 * `Signer::signMessage()` now _returns_ the signed message, leaving the original unaltered.
 * The configuration files now use human-readable keys for parameters, instead of `d`, `s` and `h`.
 
